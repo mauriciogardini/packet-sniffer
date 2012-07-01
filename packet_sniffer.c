@@ -32,62 +32,62 @@ u_short ipv6Counter = 0;
 u_short ipv4Counter = 0;
 
 int size_ip;
-int packet_counter = 0; 
+int packet_counter = 0;
 
 sniffer_packet **packets = NULL;			/* Packet array */
-int num_elements = 0; 						/* Number of elements used */
-int num_allocated = 0; 						/* How large the array is */
-int is_capture_disabled = 0; 
+int num_elements = 0;						/* Number of elements used */
+int num_allocated = 0;						/* How large the array is */
+int is_capture_disabled = 0;
 pcap_t *handle;
 
 char param_filter[50] = "";
 char *param_device = "en1";
 int param_packets = -1;
 
-/* Initializes a hash 
+/* Initializes a hash
  * int size: Size of the hash
  */
-hash_t *hash_init(int size) 
+hash_t *hash_init(int size)
 {
-    hash_t *hash = malloc(sizeof(hash_t));
+	hash_t *hash = malloc(sizeof(hash_t));
 
-    if(hash == NULL) { /* trata o erro do malloc se tu quiser */ }
+	if(hash == NULL) { /* trata o erro do malloc se tu quiser */ }
 
-    hash->keys = malloc(sizeof(int) * size);
-    hash->values = malloc(sizeof(int) * size);
-    hash->size = 0;
+	hash->keys = malloc(sizeof(int) * size);
+	hash->values = malloc(sizeof(int) * size);
+	hash->size = 0;
 
-    return hash;
+	return hash;
 }
 
-/* Increments a hash 
+/* Increments a hash
  * hash_t *hash: hash to be incremented
  * int key: Value of the key to be incremented
  */
-void hash_increment(hash_t *hash, int key) 
+void hash_increment(hash_t *hash, int key)
 {
 	int i = 0;
 	int found = 0;
-    while ((i < hash->size)&&(found != 1))
-	{	
-        if(hash->keys[i] == key) 
+	while ((i < hash->size)&&(found != 1))
+	{
+		if(hash->keys[i] == key)
 		{
-            (hash->values[i])++;
+			(hash->values[i])++;
 			found = 1;
-        }
+		}
 		i++;
-    }
+	}
 	if (found == 0)
 	{
 		hash->keys[i] = key;
-	    hash->values[i] = 1;
+		hash->values[i] = 1;
 		hash->size++;
 	}
 }
 
-/* Free the memory used by the hash 
+/* Free the memory used by the hash
  * hash_t *hash: hash to be incremented
- */ 
+ */
 void free_hash(hash_t *hash)
 {
 	free(hash->keys);
@@ -96,34 +96,34 @@ void free_hash(hash_t *hash)
 	hash = NULL;
 }
 
-/* Add a sniffer_packet to the packets array 
+/* Add a sniffer_packet to the packets array
  * sniffer_packet item: packet to be added to the packet array
  */
 int add_to_sniffer_array (sniffer_packet *item)
 {
 	if (num_elements == num_allocated) // Are more refs required?
 		{
-		    if (num_allocated == 0)
-	        	num_allocated = 3; // Start off with 3 refs
-	        else
-	        	num_allocated *= 2; // Double the number of refs allocated
-	
-	        // Make the reallocation transactional
-	        // by using a temporary variable first
-	        void *_tmp = realloc(packets, (num_allocated * sizeof(sniffer_packet*)));
-	
-	        // If the reallocation didn't go so well,
-	        // inform the user and bail out
-	        if (!_tmp)
-	        {
-	        	fprintf(stderr, "ERROR: Couldn't realloc memory!\n");
-	        	return(-1);
-	        }
-	
-	        packets = (sniffer_packet**)_tmp;
+			if (num_allocated == 0)
+				num_allocated = 3; // Start off with 3 refs
+			else
+				num_allocated *= 2; // Double the number of refs allocated
+
+			// Make the reallocation transactional
+			// by using a temporary variable first
+			void *_tmp = realloc(packets, (num_allocated * sizeof(sniffer_packet*)));
+
+			// If the reallocation didn't go so well,
+			// inform the user and bail out
+			if (!_tmp)
+			{
+				fprintf(stderr, "ERROR: Couldn't realloc memory!\n");
+				return(-1);
+			}
+
+			packets = (sniffer_packet**)_tmp;
 		}
 	packets[num_elements] = item;
-	
+
 	num_elements++;
 	return num_elements;
 }
@@ -134,7 +134,7 @@ void print_icmp6_graph(sniffer_packet **packets)
 	hash_t *icmpv6_hash = hash_init(34);
 	int counter;
 	int icmp6_counter = 0;
-	
+
 	/* Processing ICMPv6 packets for type retrievement */
 	for (counter = 0; counter < packet_counter; counter++)
 	{
@@ -144,7 +144,7 @@ void print_icmp6_graph(sniffer_packet **packets)
 			icmp6_counter = icmp6_counter + 1;
 		}
 	}
-	
+
 	if (icmpv6_hash->size > 0)
 	{
 		/* Printing the graph */
@@ -161,29 +161,29 @@ void print_icmp6_graph(sniffer_packet **packets)
 		}
 		printf("\n");
 		printf("\n");
-	
+
 		printf("%s|\n", MSG_IDENTATION_1);
 		printf("%s|\n", MSG_IDENTATION_1);
 		printf("%s|\n", MSG_IDENTATION_1);
 		printf("%s|\n", MSG_IDENTATION_1);
-	
-		for(counter = 0; counter < icmpv6_hash->size; counter++) 
+
+		for(counter = 0; counter < icmpv6_hash->size; counter++)
 		{
 			float value;
 			char *text;
 			int i;
-			
+
 			value = ((float)icmpv6_hash->values[counter] * 100.0)/((float)icmp6_counter);
 			printf("%s|", MSG_IDENTATION_1);
 			for (i=0; i < ((int)value); i++)
 			{
 				printf("%s", "#");
 			}
-			
+
 			get_ICMPv6_message(icmpv6_hash->keys[counter], -1, &text);
-		
+
 			printf(" %s - %i - %f\n", text, icmpv6_hash->values[counter], value);
-	    }
+		}
 
 		printf("%s|\n", MSG_IDENTATION_1);
 		printf("%s|\n", MSG_IDENTATION_1);
@@ -197,14 +197,14 @@ void print_icmp6_graph(sniffer_packet **packets)
 		printf("\n");
 		printf("\n");
 	}
-	
+
 	else
 	{
 		printf("\n");
 		printf("No ICMPv6 packets were captured.\n");
 		printf("\n");
 	}
-	
+
 	free_hash(icmpv6_hash);
 }
 
@@ -216,7 +216,7 @@ void print_ipv4_ipv6_graph(sniffer_packet **packets)
 	float other = (((float)packet_counter - (float)ipv4Counter - (float)ipv6Counter) * 100.0)/(float)packet_counter;
 	printf("\n%i packages were processed successfully, being %i IPv4, %i IPv6 and %i of other types.\n", packet_counter, ipv4Counter, ipv6Counter, packet_counter - ipv4Counter - ipv6Counter);
 	printf("\n");
-	
+
 	printf("%s|", MSG_IDENTATION_1);
 	int i;
 	for (i=0; i < 58; i++)
@@ -230,7 +230,7 @@ void print_ipv4_ipv6_graph(sniffer_packet **packets)
 	}
 	printf("\n");
 	printf("\n");
-	
+
 	printf("%s|\n", MSG_IDENTATION_1);
 	printf("%s|\n", MSG_IDENTATION_1);
 	printf("%s|\n", MSG_IDENTATION_1);
@@ -245,7 +245,7 @@ void print_ipv4_ipv6_graph(sniffer_packet **packets)
 	printf("%s|\n", MSG_IDENTATION_1);
 	printf("%s|\n", MSG_IDENTATION_1);
 	printf("%s|", MSG_IDENTATION_1);
-	
+
 	for (i=0; i < ((int)ipv6); i++)
 	{
 		printf("%s", "#");
@@ -254,7 +254,7 @@ void print_ipv4_ipv6_graph(sniffer_packet **packets)
 	printf("%s|\n", MSG_IDENTATION_1);
 	printf("%s|\n", MSG_IDENTATION_1);
 	printf("%s|", MSG_IDENTATION_1);
-	
+
 	for (i=0; i < ((int)other); i++)
 	{
 		printf("%s", "#");
@@ -279,7 +279,7 @@ void print_ipv6_graph(sniffer_packet **packets)
 	hash_t *ipv6_hash = hash_init(34);
 	int counter;
 	int ip6_counter = 0;
-	
+
 	/* Processing ICMPv6 packets for type retrievement */
 	for (counter = 0; counter < packet_counter; counter++)
 	{
@@ -306,7 +306,7 @@ void print_ipv6_graph(sniffer_packet **packets)
 			ip6_counter = ip6_counter + 1;
 		}
 	}
-	
+
 	if (ipv6_hash->size > 0)
 	{
 		/* Printing the graph */
@@ -323,29 +323,29 @@ void print_ipv6_graph(sniffer_packet **packets)
 		}
 		printf("\n");
 		printf("\n");
-	
+
 		printf("%s|\n", MSG_IDENTATION_1);
 		printf("%s|\n", MSG_IDENTATION_1);
 		printf("%s|\n", MSG_IDENTATION_1);
 		printf("%s|\n", MSG_IDENTATION_1);
-	
-		for(counter = 0; counter < ipv6_hash->size; counter++) 
+
+		for(counter = 0; counter < ipv6_hash->size; counter++)
 		{
 			float value;
 			char *text;
 			int i;
-			
+
 			value = ((float)ipv6_hash->values[counter] * 100.0)/((float)ip6_counter);
 			printf("%s|", MSG_IDENTATION_1);
 			for (i=0; i < ((int)value); i++)
 			{
 				printf("%s", "#");
 			}
-			
+
 			get_IPv6_message(ipv6_hash->keys[counter], &text);
-								
+
 			printf(" %s (%i) - %i - %f\n", text, ipv6_hash->keys[counter], ipv6_hash->values[counter], value);
-	    }
+		}
 
 		printf("%s|\n", MSG_IDENTATION_1);
 		printf("%s|\n", MSG_IDENTATION_1);
@@ -359,14 +359,14 @@ void print_ipv6_graph(sniffer_packet **packets)
 		printf("\n");
 		printf("\n");
 	}
-	
+
 	else
 	{
 		printf("\n");
 		printf("No IPv6 packets were captured.\n");
 		printf("\n");
 	}
-	
+
 	free_hash(ipv6_hash);
 }
 
@@ -381,7 +381,7 @@ void print_summary()
 /* Prints the packets' header (bash) */
 void print_header()
 {
-	printf("| P. ID  | Dest. MAC Address | Srce. MAC Address |          Dest. IP:Port           |          Srce. IP:Port           |    Protocol    |               Description               |\n");
+	printf("| P. ID  | Dest. MAC Address | Srce. MAC Address |			Dest. IP:Port			|		   Srce. IP:Port		   |	Protocol	|				Description				  |\n");
 }
 
 /* Prints the packet passed by parameter
@@ -396,20 +396,20 @@ void print_packet_line(struct sniffer_packet *sp, int number)
 	#define PORT_SIZE 5
 	#define PROTOCOL_SIZE 14
 	#define DESCRIPTION_SIZE 39
-	
+
 	printf("|");
-	
+
 	//Writing the packet number
 	char packet_number[PACKET_NUMBER_SIZE];
 	int number_lenght = 0;
 	number_lenght = sprintf(packet_number, "%i", number);
-	
+
 	printf(" %*s ", PACKET_NUMBER_SIZE, packet_number);
 	printf("|");
-	
+
 	//Writing MAC adresses
 	//Verifying if it's a valid packet
-	if ((sp->type == ETHERNET_ID) || (sp->type == IP_ID) || (sp->type == TCP_ID) || (sp->type == UDP_ID) || (sp->type == ICMP_ID) || 
+	if ((sp->type == ETHERNET_ID) || (sp->type == IP_ID) || (sp->type == TCP_ID) || (sp->type == UDP_ID) || (sp->type == ICMP_ID) ||
 		(sp->type == IP6_ID) || (sp->type == TCP6_ID) || (sp->type == UDP6_ID) || (sp->type == ICMP6_ID))
 	{
 		char packet_destination_mac[MAC_ADDRESS_SIZE] = "";
@@ -419,7 +419,7 @@ void print_packet_line(struct sniffer_packet *sp, int number)
 		int source_mac_lenght = 0;
 		int temp_lenght = 0;
 		int x;
-		
+
 		x = 0;
 		while (x < 6)
 		{
@@ -445,10 +445,10 @@ void print_packet_line(struct sniffer_packet *sp, int number)
 			}
 			x++;
 		}
-				
+
 		printf(" %*s ", MAC_ADDRESS_SIZE - 1, packet_destination_mac);
 		printf("|");
-	
+
 		x = 0;
 		while (x < 6)
 		{
@@ -464,7 +464,7 @@ void print_packet_line(struct sniffer_packet *sp, int number)
 				case UDP6_ID: temp_lenght = sprintf(temp_mac, "%X", (((sp->gen_pack)->udp6_pack)->ethernet)->ether_shost[x]);
 				case ICMP6_ID: temp_lenght = sprintf(temp_mac, "%X", (((sp->gen_pack)->icmp6_pack)->ethernet)->ether_shost[x]);
 				default: ;
-			}			
+			}
 			//printf(" %s -", temp_mac);
 			source_mac_lenght += temp_lenght;
 			strcat(packet_source_mac, temp_mac);
@@ -475,15 +475,15 @@ void print_packet_line(struct sniffer_packet *sp, int number)
 			}
 			x++;
 		}
-	
+
 		printf(" %*s ", MAC_ADDRESS_SIZE - 1, packet_source_mac);
 		printf("|");
 	}
-	
-	
+
+
 	//Writing IP adresses, protocol & description
 	switch (sp->type)
-	{	
+	{
 		case ETHERNET_ID:
 		{
 			printf(" %*s ", IP_ADDRESS_SIZE + PORT_SIZE + 1, " ");
@@ -625,11 +625,11 @@ void print_packets(sniffer_packet *packets)
 	print_header();
 	for (counter = 0; counter < packet_counter; counter++)
 	{
-		print_packet_line(&packets[counter], counter);	
+		print_packet_line(&packets[counter], counter);
 	}
 }
 
-/* Gets the IPv6 Priority message for the Priority code passed by parameter 
+/* Gets the IPv6 Priority message for the Priority code passed by parameter
  * int ipPriority: Priority code
  * char **icmpMessage: pointer to a char pointer which will store the message
  */
@@ -646,10 +646,10 @@ void get_IPv6_message(int ipPriority, char **icmpMessage)
 		case IPV6_INTERACTIVE_TRAFFIC: *icmpMessage = MSG_IPV6_INTERACTIVE_TRAFFIC; break;
 		case IPV6_CONTROL_TRAFFIC: *icmpMessage = MSG_IPV6_CONTROL_TRAFFIC; break;
 		default: *icmpMessage = MSG_IPV6_UNKNOWN; break;
-	}	
+	}
 }
 
-/* Gets the ICMP message for the type and code passed by parameter 
+/* Gets the ICMP message for the type and code passed by parameter
  * int icmpType: ICMP type
  * int icmpCode: ICMP code (if it exists)
  * char **icmpMessage: pointer to a char pointer which will store the message
@@ -794,7 +794,7 @@ void get_ICMPv6_message(int icmpType, int icmpCode, char **icmpMessage)
  * const u_char *packet: packet to be processed
  */
 void process_ICMP(const u_char *packet)
-{	
+{
 	const struct ip *ip;
 	const struct ethernet *ethernet;
 	const struct icmp *icmp;
@@ -802,18 +802,18 @@ void process_ICMP(const u_char *packet)
 	char* icmpMessage;
 	struct sniffer_packet *s_packet;
 	union generic_packet *g_packet;
-	
+
 	s_packet = (struct sniffer_packet*) malloc(sizeof(struct sniffer_packet));
 	g_packet = (union generic_packet*) malloc(sizeof(union generic_packet));
 	i_packet = (struct icmp_packet*) malloc(sizeof(struct icmp_packet));
 	i_packet->ethernet = (struct ethernet*) malloc(sizeof(struct ethernet));
 	i_packet->ip = (struct ip*) malloc(sizeof(struct ip));
 	i_packet->icmp = (struct icmp*) malloc(sizeof(struct icmp));
-	
+
 	ethernet = (struct ethernet*)(packet);
 	ip = (struct ip*)(packet + sizeof(struct ethernet));
 	icmp = (struct icmp*)(packet + sizeof(struct ethernet) + sizeof(struct ip));
-	
+
 	memcpy((i_packet->ethernet), ethernet, sizeof(struct ethernet));
 	memcpy(i_packet->ip, ip, sizeof(struct ip));
 	memcpy(i_packet->icmp, icmp, sizeof(struct icmp));
@@ -822,7 +822,7 @@ void process_ICMP(const u_char *packet)
 	g_packet->icmp_pack = i_packet;
 	s_packet->gen_pack = g_packet;
 	s_packet->type = ICMP_ID;
-	
+
 	print_packet_line(s_packet, packet_counter);
 	add_to_sniffer_array(s_packet);
 }
@@ -839,14 +839,14 @@ void process_ICMPv6(const u_char *packet)
 	char* icmpMessage;
 	struct sniffer_packet *s_packet;
 	union generic_packet *g_packet;
-	
+
 	s_packet = (struct sniffer_packet*) malloc(sizeof(struct sniffer_packet));
 	g_packet = (union generic_packet*) malloc(sizeof(union generic_packet));
 	i6_packet = (struct icmp6_packet*) malloc(sizeof(struct icmp6_packet));
 	i6_packet->ethernet = (struct ethernet*) malloc(sizeof(struct ethernet));
 	i6_packet->ip6 = (struct ip6_hdr*) malloc(sizeof(struct ip6_hdr));
 	i6_packet->icmp6 = (struct icmp6_hdr*) malloc(sizeof(struct icmp6_hdr));
-	
+
 	ethernet = (struct ethernet*)(packet);
 	ip6 = (struct ip6_hdr*)(packet + sizeof(struct ethernet));
 	icmp6 = (struct icmp6_hdr*)(packet + sizeof(struct ethernet) + sizeof(struct ip6_hdr));
@@ -859,7 +859,7 @@ void process_ICMPv6(const u_char *packet)
 	g_packet->icmp6_pack = i6_packet;
 	s_packet->gen_pack = g_packet;
 	s_packet->type = ICMP6_ID;
-	
+
 	print_packet_line(s_packet, packet_counter);
 	add_to_sniffer_array(s_packet);
 }
@@ -868,7 +868,7 @@ void process_ICMPv6(const u_char *packet)
 * const u_char *packet: packet to be processed
 */
 void process_IP(const u_char *packet)
-{	
+{
 	const struct ip *ip;
 	const struct tcphdr *tcp;
 	const struct udphdr *udp;
@@ -886,8 +886,8 @@ void process_IP(const u_char *packet)
 	ethernet = (struct ethernet*)(packet);
 	ip = (struct ip*)(packet + sizeof(struct ethernet));
 
-	/* Determining the protocol */	
-	switch(ip->ip_p) 
+	/* Determining the protocol */
+	switch(ip->ip_p)
 	{
 		case IPPROTO_TCP:
 			{
@@ -896,9 +896,9 @@ void process_IP(const u_char *packet)
 				t_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				t_packet->ip = (struct ip*) malloc((sizeof(struct ip)));
 				t_packet->tcphdr = (struct tcphdr*) malloc((sizeof(struct tcphdr)));
-				
+
 				tcp = (struct tcphdr*)(packet + sizeof(struct ethernet) + size_ip);
-			
+
 				/* Determinando o Application protocol (se houver) */
 				switch (ntohs(tcp->th_dport))
 				{
@@ -955,7 +955,7 @@ void process_IP(const u_char *packet)
 						memcpy(t_packet->app_prot, " ", sizeof(char) * (strlen(" ") + 1));
 						break;
 				}
-				
+
 				memcpy((t_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((t_packet->ip), ip, sizeof(struct ip));
 				memcpy((t_packet->tcphdr), tcp, sizeof(struct tcphdr));
@@ -964,24 +964,24 @@ void process_IP(const u_char *packet)
 				s_packet->type = TCP_ID;
 			}
 			break;
-			
+
 		case IPPROTO_UDP:
-			{	
+			{
 				u_packet = (struct udp_packet*) malloc(sizeof(struct udp_packet));
 				u_packet->type = (char*) malloc((sizeof(char) * 15));
 				u_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				u_packet->ip = (struct ip*) malloc((sizeof(struct ip)));
 				u_packet->udphdr = (struct udphdr*) malloc((sizeof(struct udphdr)));
-				
+
 				udp = (struct udphdr*)(packet + sizeof(struct ethernet) + size_ip);
-			
+
 				if ((ntohs(udp->uh_sport) == 520) || (ntohs(udp->uh_dport) == 520))
 					memcpy(u_packet->type, "RIP (IPv4)", sizeof(char) * (strlen("RIP (IPv4)") + 1));
 				else if (ntohs(udp->uh_sport) == 53)
 					memcpy(u_packet->type, "DNS (IPv4)", sizeof(char) * (strlen("DNS (IPv4)") + 1));
 				else
 					memcpy(u_packet->type, "UDP (IPv4)", sizeof(char) * (strlen("UDP (IPv4)") + 1));
-				
+
 				memcpy((u_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((u_packet->ip), ip, sizeof(struct ip));
 				memcpy((u_packet->udphdr), udp, sizeof(struct udphdr));
@@ -990,21 +990,21 @@ void process_IP(const u_char *packet)
 				s_packet->type = UDP_ID;
 			}
 			break;
-		
+
 		case IPPROTO_ICMP:
 			{
 				process_ICMP(packet);
 				wasProcessed = 1;
 			}
 			break;
-			
+
 		case IPPROTO_OSPF:
 			{
 				i_packet = (struct ip_packet*) malloc(sizeof(struct ip_packet));
 				i_packet->type = (char*) malloc((sizeof(char) * 15));
 				i_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i_packet->ip = (struct ip*) malloc((sizeof(struct ip)));
-				
+
 				memcpy((i_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i_packet->ip), ip, sizeof(struct ip));
 				memcpy(i_packet->type, "OSPF (IPv4)", sizeof(char) * (strlen("OSPF (IPv4)") + 1));
@@ -1013,14 +1013,14 @@ void process_IP(const u_char *packet)
 				s_packet->type = IP_ID;
 			}
 			break;
-			
+
 		case IPPROTO_IP:
 			{
 				i_packet = (struct ip_packet*) malloc(sizeof(struct ip_packet));
 				i_packet->type = (char*) malloc((sizeof(char) * 15));
 				i_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i_packet->ip = (struct ip*) malloc((sizeof(struct ip)));
-				
+
 				memcpy((i_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i_packet->ip), ip, sizeof(struct ip));
 				memcpy(i_packet->type, "IP (IPv4)", sizeof(char) * (strlen("IP (IPv4)") + 1));
@@ -1029,14 +1029,14 @@ void process_IP(const u_char *packet)
 				s_packet->type = IP_ID;
 			}
 			break;
-			
+
 		case IPPROTO_IPV6:
 			{
 				i_packet = (struct ip_packet*) malloc(sizeof(struct ip_packet));
 				i_packet->type = (char*) malloc((sizeof(char) * 15));
 				i_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i_packet->ip = (struct ip*) malloc((sizeof(struct ip)));
-				
+
 				memcpy((i_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i_packet->ip), ip, sizeof(struct ip));
 				memcpy(i_packet->type, "IPv6 (IPv4)", sizeof(char) * (strlen("IPv6 (IPv4)") + 1));
@@ -1045,14 +1045,14 @@ void process_IP(const u_char *packet)
 				s_packet->type = IP_ID;
 			}
 			break;
-			
+
 		case IPPROTO_IGMP:
 			{
 				i_packet = (struct ip_packet*) malloc(sizeof(struct ip_packet));
 				i_packet->type = (char*) malloc((sizeof(char) * 15));
 				i_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i_packet->ip = (struct ip*) malloc((sizeof(struct ip)));
-				
+
 				memcpy((i_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i_packet->ip), ip, sizeof(struct ip));
 				memcpy(i_packet->type, "IGMP (IPv4)", sizeof(char) * (strlen("IGMP (IPv4)") + 1));
@@ -1061,14 +1061,14 @@ void process_IP(const u_char *packet)
 				s_packet->type = IP_ID;
 			}
 			break;
-		
+
 		default:
 			{
 				i_packet = (struct ip_packet*) malloc(sizeof(struct ip_packet));
 				i_packet->type = (char*) malloc((sizeof(char) * 15));
 				i_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i_packet->ip = (struct ip*) malloc((sizeof(struct ip)));
-				
+
 				memcpy((i_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i_packet->ip), ip, sizeof(struct ip));
 				memcpy(i_packet->type, "Unknown (IPv4)", sizeof(char) * (strlen("Unknown (IPv4)") + 1));
@@ -1101,30 +1101,30 @@ void process_IPv6(const u_char *packet)
 	struct tcp6_packet *t6_packet;
 	struct udp6_packet *u6_packet;
 	int wasProcessed = 0;
-	
+
 	s_packet = (struct sniffer_packet*) malloc(sizeof(struct sniffer_packet));
 	g_packet = (union generic_packet*) malloc(sizeof(union generic_packet));
-	
+
 	ethernet = (struct ethernet*)(packet);
 	ip6 = (struct ip6_hdr*)(packet + sizeof(struct ethernet));
-	
-	/* Determining the protocol */	
+
+	/* Determining the protocol */
 	switch(ip6->ip6_nxt)
 	{
 		case IPPROTO_TCP:
 			{
 				t6_packet = (struct tcp6_packet*) malloc(sizeof(struct tcp6_packet));
-				
+
 				tcp = (struct tcphdr*)(packet + sizeof(struct ethernet) + sizeof(struct ip6_hdr));
 				t6_packet->app_prot = (char*) malloc((sizeof(char) * 20));
 				t6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				t6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
 				t6_packet->tcphdr = (struct tcphdr*) malloc((sizeof(struct tcphdr)));
-				
+
 				memcpy((t6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((t6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy((t6_packet->tcphdr), tcp, sizeof(struct tcphdr));
-				
+
 				/* Determinando o Application protocol (se houver) */
 				switch (ntohs(tcp->th_dport))
 				{
@@ -1181,17 +1181,17 @@ void process_IPv6(const u_char *packet)
 						memcpy(t6_packet->app_prot, " ", sizeof(char) * (strlen(" ") + 1));
 						break;
 				}
-			
+
 				memcpy((t6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((t6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy((t6_packet->tcphdr), tcp, sizeof(struct tcphdr));
 				g_packet->tcp6_pack = t6_packet;
 				s_packet->gen_pack = g_packet;
 				s_packet->type = TCP6_ID;
-				
+
 			}
 			break;
-			
+
 		case IPPROTO_UDP:
 			{
 				u6_packet = (struct udp6_packet*) malloc(sizeof(struct udp6_packet));
@@ -1199,39 +1199,39 @@ void process_IPv6(const u_char *packet)
 				u6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				u6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
 				u6_packet->udphdr = (struct udphdr*) malloc((sizeof(struct udphdr)));
-				
+
 				udp = (struct udphdr*)(packet + sizeof(struct ethernet) + sizeof(struct ip6_hdr));
-				
+
 				if ((ntohs(udp->uh_sport) == 520) || (ntohs(udp->uh_dport) == 520))
 					memcpy(u6_packet->type, "RIP (IPv6)", sizeof(char) * (strlen("RIP (IPv6)") + 1));
 				else if (ntohs(udp->uh_sport) == 53)
 					memcpy(u6_packet->type, "DNS (IPv6)", sizeof(char) * (strlen("DNS (IPv6)") + 1));
 				else
 					memcpy(u6_packet->type, "UDP (IPv6)", sizeof(char) * (strlen("UDP (IPv6)") + 1));
-				
+
 				memcpy((u6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((u6_packet->ip6), ip6, sizeof(struct ip6_hdr));
-				memcpy((u6_packet->udphdr), udp, sizeof(struct udphdr));	
+				memcpy((u6_packet->udphdr), udp, sizeof(struct udphdr));
 				g_packet->udp6_pack = u6_packet;
 				s_packet->gen_pack = g_packet;
 				s_packet->type = UDP6_ID;
 			}
 			break;
-			
+
 		case IPPROTO_ICMPV6:
 			{
 				process_ICMPv6(packet);
 				wasProcessed = 1;
 			}
 			break;
-			
+
 		case IPPROTO_OSPF:
 			{
 				i6_packet = (struct ip6_packet*) malloc(sizeof(struct ip6_packet));
 				i6_packet->type = (char*) malloc((sizeof(char) * 15));
 				i6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
-				
+
 				memcpy((i6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy(i6_packet->type, "OSPF (IPv6)", sizeof(char) * (strlen("OSPF (IPv6)") + 1));
@@ -1247,7 +1247,7 @@ void process_IPv6(const u_char *packet)
 				i6_packet->type = (char*) malloc((sizeof(char) * 15));
 				i6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
-				
+
 				memcpy((i6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy(i6_packet->type, "IPv6 (IPv6)", sizeof(char) * (strlen("IPv6 (IPv6)") + 1));
@@ -1263,7 +1263,7 @@ void process_IPv6(const u_char *packet)
 				i6_packet->type = (char*) malloc((sizeof(char) * 15));
 				i6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
-				
+
 				memcpy((i6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy(i6_packet->type, "IPv4 (IPv6)", sizeof(char) * (strlen("IPv4 (IPv6)") + 1));
@@ -1273,20 +1273,20 @@ void process_IPv6(const u_char *packet)
 			}
 			break;
 
-        case IPPROTO_PGM:
+		case IPPROTO_PGM:
 			{
 				i6_packet = (struct ip6_packet*) malloc(sizeof(struct ip6_packet));
 				i6_packet->type = (char*) malloc((sizeof(char) * 15));
 				i6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
-				
+
 				memcpy((i6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy(i6_packet->type, "PGM (IPv6)", sizeof(char) * (strlen("PGM (IPv6)") + 1));
 				g_packet->ip6_pack = i6_packet;
 				s_packet->gen_pack = g_packet;
 				s_packet->type = IP6_ID;
-            }    
+			}
 			break;
 
 		case IPPROTO_GRE:
@@ -1295,7 +1295,7 @@ void process_IPv6(const u_char *packet)
 				i6_packet->type = (char*) malloc((sizeof(char) * 15));
 				i6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
-				
+
 				memcpy((i6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy(i6_packet->type, "GRE (IPv6)", sizeof(char) * (strlen("GRE (IPv6)") + 1));
@@ -1311,7 +1311,7 @@ void process_IPv6(const u_char *packet)
 				i6_packet->type = (char*) malloc((sizeof(char) * 15));
 				i6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
-				
+
 				memcpy((i6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy(i6_packet->type, "RSVP (IPv6)", sizeof(char) * (strlen("RSVP (IPv6)") + 1));
@@ -1327,7 +1327,7 @@ void process_IPv6(const u_char *packet)
 				i6_packet->type = (char*) malloc((sizeof(char) * 15));
 				i6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
-				
+
 				memcpy((i6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy(i6_packet->type, "None (IPv6)", sizeof(char) * (strlen("None (IPv6)") + 1));
@@ -1336,14 +1336,14 @@ void process_IPv6(const u_char *packet)
 				s_packet->type = IP6_ID;
 			}
 			break;
-			
+
 		default:
 			{
 				i6_packet = (struct ip6_packet*) malloc(sizeof(struct ip6_packet));
 				i6_packet->type = (char*) malloc((sizeof(char) * 15));
 				i6_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
 				i6_packet->ip6 = (struct ip6_hdr*) malloc((sizeof(struct ip6_hdr)));
-				
+
 				memcpy((i6_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy((i6_packet->ip6), ip6, sizeof(struct ip6_hdr));
 				memcpy(i6_packet->type, "Unknown (IPv6)", sizeof(char) * (strlen("Unknown (IPv6)") + 1));
@@ -1376,15 +1376,15 @@ void process_ethernet(const u_char *packet)
 	 * ethertype.h
 	 * http://en.wikipedia.org/wiki/EtherType
 	 */
-	
+
 	s_packet = (struct sniffer_packet*) malloc(sizeof(struct sniffer_packet));
 	g_packet = (union generic_packet*) malloc(sizeof(union generic_packet));
-	
+
 	ethernet = (struct ethernet*)(packet);
-	
+
 	switch(ntohs (ethernet->ether_type))
-	{ 
-    	case ETHERTYPE_IP:
+	{
+		case ETHERTYPE_IP:
 			{
 				process_IP(packet);
 				wasProcessed = 1;
@@ -1395,7 +1395,7 @@ void process_ethernet(const u_char *packet)
 				e_packet = (struct ethernet_packet*) malloc(sizeof(struct ethernet_packet));
 				e_packet->type = (char*) malloc((sizeof(char) * 15));
 				e_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
-				
+
 				memcpy((e_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy(e_packet->type, "ARP", sizeof(char) * (strlen("ARP") + 1));
 				g_packet->eth_pack = e_packet;
@@ -1408,7 +1408,7 @@ void process_ethernet(const u_char *packet)
 				e_packet = (struct ethernet_packet*) malloc(sizeof(struct ethernet_packet));
 				e_packet->type = (char*) malloc((sizeof(char) * 15));
 				e_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
-				
+
 				memcpy((e_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy(e_packet->type, "Reverse ARP", sizeof(char) * (strlen("Reverse ARP") + 1));
 				g_packet->eth_pack = e_packet;
@@ -1427,7 +1427,7 @@ void process_ethernet(const u_char *packet)
 				e_packet = (struct ethernet_packet*) malloc(sizeof(struct ethernet_packet));
 				e_packet->type = (char*) malloc((sizeof(char) * 15));
 				e_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
-				
+
 				memcpy((e_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy(e_packet->type, "802.1q", sizeof(char) * (strlen("802.1q") + 1));
 				g_packet->eth_pack = e_packet;
@@ -1440,7 +1440,7 @@ void process_ethernet(const u_char *packet)
 				e_packet = (struct ethernet_packet*) malloc(sizeof(struct ethernet_packet));
 				e_packet->type = (char*) malloc((sizeof(char) * 15));
 				e_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
-				
+
 				memcpy((e_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy(e_packet->type, "PPoE Discovery", sizeof(char) * (strlen("PPoE Discovery") + 1));
 				g_packet->eth_pack = e_packet;
@@ -1453,7 +1453,7 @@ void process_ethernet(const u_char *packet)
 				e_packet = (struct ethernet_packet*) malloc(sizeof(struct ethernet_packet));
 				e_packet->type = (char*) malloc((sizeof(char) * 15));
 				e_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
-				
+
 				memcpy((e_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy(e_packet->type, "PPoE Session", sizeof(char) * (strlen("PPoE Session") + 1));
 				g_packet->eth_pack = e_packet;
@@ -1462,11 +1462,11 @@ void process_ethernet(const u_char *packet)
 			}
 			break;
 		default:
-		 	{
+			{
 				e_packet = (struct ethernet_packet*) malloc(sizeof(struct ethernet_packet));
 				e_packet->type = (char*) malloc((sizeof(char) * 15));
 				e_packet->ethernet = (struct ethernet*) malloc((sizeof(struct ethernet)));
-			
+
 				memcpy((e_packet->ethernet), ethernet, sizeof(struct ethernet));
 				memcpy(e_packet->type, "Unknown", sizeof(char) * (strlen("Unknown") + 1));
 				g_packet->eth_pack = e_packet;
@@ -1492,7 +1492,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
 	}
 }
 
-/* Watches the keyboard for the input of the 'q' character 
+/* Watches the keyboard for the input of the 'q' character
  * void *data: parameter sent from pthread_init
 */
 void* watching_keyboard(void *data)
@@ -1500,22 +1500,22 @@ void* watching_keyboard(void *data)
 	char c;
 	do
 	{
-		scanf("%c", &c);	  
+		scanf("%c", &c);
 	} while ((c != 'q') && (c != 'Q'));
 
 	is_capture_disabled = 1;
 	sleep(1);
 	pcap_breakloop(handle);
-	
+
 	return 0;
 }
 
 int main(int argc, char *argv[])
-{	
+{
 	pthread_t keyboard_thread;
-	struct bpf_program fp; 				/* O filtro compilado. */
-	char filter_exp[1024]; 				/* A expressão do filtro. */
-	char errbuf[PCAP_ERRBUF_SIZE]; 		/* Armazenará uma mensagem de erro em caso de falha do pcap_lookupdev(). */
+	struct bpf_program fp;				/* O filtro compilado. */
+	char filter_exp[1024];				/* A expressão do filtro. */
+	char errbuf[PCAP_ERRBUF_SIZE];		/* Armazenará uma mensagem de erro em caso de falha do pcap_lookupdev(). */
 	bpf_u_int32 maskAddress;			/* A máscara de rede do dispositivo. */
 	bpf_u_int32 netAddress;				/* O IP do dispositivo. */
 	int menu_option = -1;
@@ -1542,50 +1542,50 @@ int main(int argc, char *argv[])
 		printf("\n");
 
 		menu_option = atoi(&c);
-	
+
 		switch (menu_option)
 		{
 			case 1:
 			{
 				if (pcap_findalldevs(&devices, errbuf) == -1)
-			    {
-			        printf("Couldn't get the device list. The program will be finished.");
-			        exit(1);
-			    }
+				{
+					printf("Couldn't get the device list. The program will be finished.");
+					exit(1);
+				}
 				else
 				{
 					char c = -1;
 					int i = 0;
 					char **devicenames;
-				
+
 					devicenames = (char**) malloc(100);
-				
+
 					printf("Type the new device.\n");
 					for(d = devices; d; (d=d->next))
 					{
 						devicenames[i] = (d->name);
-				        printf("%d) %s\n", ++i, d->name);
-				    }
-			
+						printf("%d) %s\n", ++i, d->name);
+					}
+
 					do
 					{
 						c = getchar();
 					} while ((c != '1') && (c != '2') && (c != '3') && (c != '4') && (c != '5'));
-				
+
 					param_device = (char *) devicenames[atoi(&c) - 1];
 					free (devicenames);
 				}
-			} 
-			break;	
-			
+			}
+			break;
+
 			case 2:
 			{
 				printf("Type the new filter (Or type '0' for a blank filter).\n");
-				rewind(stdin); 
+				rewind(stdin);
 				fgets(param_filter, 25, stdin);
 			}
 			break;
-			
+
 			case 3:
 			{
 				int i = 0;
@@ -1596,16 +1596,16 @@ int main(int argc, char *argv[])
 				else
 					param_packets = i;
 			}
-			default: 
-			{} 
+			default:
+			{}
 			break;
 		}
 	} while ((menu_option != 4) && (menu_option != 0));
-	
+
 	if (menu_option == 4)
 	{
 		/* Verifying for the device */
-		if (pcap_lookupnet(param_device, &netAddress, &maskAddress, errbuf) == -1) 
+		if (pcap_lookupnet(param_device, &netAddress, &maskAddress, errbuf) == -1)
 		{
 			fprintf(stderr, "Can't get netmask for device %s\n", param_device);
 			netAddress = 0;
@@ -1630,7 +1630,7 @@ int main(int argc, char *argv[])
 		 * errbuf = Armazenará uma mensagem de erro em caso de falha do pcap_open_live().
 		 */
 		handle = pcap_open_live(param_device, BUFSIZ, 1, 1000, errbuf);
-		if (handle == NULL) 
+		if (handle == NULL)
 		{
 			fprintf(stderr, "Couldn't open device %s: %s\n", param_device, errbuf);
 			return(2);
@@ -1640,14 +1640,14 @@ int main(int argc, char *argv[])
 		if (param_filter != NULL)
 			strcat(filter_exp, param_filter);
 
-		if (pcap_compile(handle, &fp, filter_exp, 0, netAddress) == -1) 
+		if (pcap_compile(handle, &fp, filter_exp, 0, netAddress) == -1)
 		{
 			fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
 			return(2);
 		}
 
-	 	/* Setting the filter */
-		if (pcap_setfilter(handle, &fp) == -1) 
+		/* Setting the filter */
+		if (pcap_setfilter(handle, &fp) == -1)
 		{
 			fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
 			return(2);
@@ -1659,11 +1659,11 @@ int main(int argc, char *argv[])
 
 		/* Capturing the packets */
 		pcap_loop(handle, param_packets, got_packet, NULL);
-		
+
 		print_summary();
-		
+
 		menu_option = -1;
-		
+
 		do
 		{
 			printf("\n");
@@ -1672,15 +1672,15 @@ int main(int argc, char *argv[])
 			printf("2 - Print the IPv6 packets' status.\n");
 			printf("3 - Print the ICMPv6 packets' status.\n");
 			printf("0 - Quit\n");
-		
+
 			char c = -1;
 			do
 			{
 				c = getchar();
 			} while ((c != '1') && (c != '2') && (c != '3') && (c != '0'));
-			
+
 			menu_option = atoi(&c);
-						
+
 			switch (menu_option)
 			{
 				case 1:
@@ -1702,7 +1702,7 @@ int main(int argc, char *argv[])
 				{}
 				break;
 			}
-			
+
 		} while (menu_option != 0);
 	}
 	return(0);
