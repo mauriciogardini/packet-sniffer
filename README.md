@@ -1,6 +1,6 @@
 # Packet Sniffer
 
-Simple packet sniffer implemented in C.
+Simple packet sniffer implemented in C for the Networks course.
 
 ## Compilation
 
